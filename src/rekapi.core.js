@@ -587,23 +587,11 @@ var rekapiCore = function (root, _, Tweenable) {
 
     // Update and render each of the actors
     _.each(this._actors, function (actor) {
-      actor._updateState(opt_millisecond);
+      actor._updateState(opt_millisecond, opt_doResetLaterFnKeyframes);
       if (typeof actor.render === 'function') {
         actor.render(actor.context, actor.get());
       }
     });
-
-    if (!opt_doResetLaterFnKeyframes) {
-      var lookupObject = { name: 'function' };
-      _.each(this._actors, function (actor) {
-        var fnKeyframes = _.where(actor._keyframeProperties, lookupObject);
-        _.each(fnKeyframes, function (fnKeyframe) {
-          if (fnKeyframe.millisecond >= opt_millisecond) {
-            fnKeyframe.hasFired = false;
-          }
-        });
-      }, this);
-    }
 
     this._lastUpdatedMillisecond = opt_millisecond;
     fireEvent(this, 'afterUpdate', _);
