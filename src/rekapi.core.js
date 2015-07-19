@@ -161,7 +161,7 @@ var rekapiCore = function (root, _, Tweenable) {
     }
 
     rekapi._latestIteration = currentIteration;
-    rekapi.update(loopPosition);
+    rekapi.update(loopPosition, true);
     updatePlayState(rekapi, currentIteration);
 
     _.each(keyframeResetList, function (fnKeyframe) {
@@ -573,9 +573,12 @@ var rekapiCore = function (root, _, Tweenable) {
    * @param {number=} opt_millisecond The point in the timeline at which to
    * render.  If omitted, this renders the last millisecond that was rendered
    * (it's a re-render).
+   * @param {boolean=} opt_doResetLaterFnKeyframes If true, allow all function
+   * keyframes later in the timeline to be run again.  This is a low-level
+   * feature, it should not be `true` (or even provided) for most use cases.
    * @chainable
    */
-  Rekapi.prototype.update = function (opt_millisecond) {
+  Rekapi.prototype.update = function (opt_millisecond,  opt_doResetLaterFnKeyframes) {
     if (opt_millisecond === undefined) {
       opt_millisecond = this._lastUpdatedMillisecond;
     }
@@ -589,6 +592,18 @@ var rekapiCore = function (root, _, Tweenable) {
         actor.render(actor.context, actor.get());
       }
     });
+
+    if (!opt_doResetLaterFnKeyframes) {
+      var lookupObject = { name: 'function' };
+      _.each(this._actors, function (actor) {
+        var fnKeyframes = _.where(actor._keyframeProperties, lookupObject);
+        _.each(fnKeyframes, function (fnKeyframe) {
+          if (fnKeyframe.millisecond >= opt_millisecond) {
+            fnKeyframe.hasFired = false;
+          }
+        });
+      }, this);
+    }
 
     this._lastUpdatedMillisecond = opt_millisecond;
     fireEvent(this, 'afterUpdate', _);
