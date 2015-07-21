@@ -1488,7 +1488,10 @@
       equal(callCount, 1, 'The function was only called once');
     });
 
-    test('Explicit calls to .update() reset all function keyframes later in the timeline', function () {
+    module('_resetFnKeyframesFromMillisecond');
+
+
+    test('_resetFnKeyframesFromMillisecond reset function keyframes later but not before specified millisecond', function () {
       var rekapi = new Rekapi();
       var actor = rekapi.addActor();
 
@@ -1498,10 +1501,11 @@
           'function': function () {
             callCount++;
           }
-          ,x: 0
         })
         .keyframe(20, {
-          x: 10
+          'function': function () {
+            callCount++;
+          }
         });
 
       rekapi._timesToIterate = 1;
@@ -1512,11 +1516,13 @@
       Rekapi._private.updateToMillisecond(rekapi, 15);
       equal(callCount, 1, 'The function was called once');
 
-      rekapi.update(5);
+      actor._resetFnKeyframesFromMillisecond(2);
       Rekapi._private.updateToMillisecond(rekapi, 15);
       equal(callCount, 2, 'The function was called twice');
-    });
 
+      Rekapi._private.updateToMillisecond(rekapi, 15);
+      equal(callCount, 2, 'Further calls to updateToCurrentMillisecond do not fire functionkeyframes');
+    });
 
   } ());
   </script>

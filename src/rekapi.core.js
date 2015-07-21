@@ -492,6 +492,8 @@ var rekapiCore = function (root, _, Tweenable) {
     this.play(opt_howManyTimes);
     this._loopTimestamp = now() - millisecond;
 
+    _.invoke(this._actors, '_resetFnKeyframesFromMillisecond', millisecond);
+
     return this;
   };
 

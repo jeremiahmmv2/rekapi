@@ -908,16 +908,24 @@ rekapiModules.push(function (context) {
     this.set(interpolatedObject);
 
     if (!opt_doResetLaterFnKeyframes) {
-      _.chain(this._keyframeProperties)
-        .where({ name: 'function' })
-        .each(function (fnKeyframe) {
-          if (fnKeyframe.millisecond >= millisecond) {
-            fnKeyframe.hasFired = false;
-          }
-        });
+      this._resetFnKeyframesFromMillisecond(millisecond);
     }
 
     return this;
+  };
+
+  /*!
+   * @method _resetFnKeyframesFromMillisecond
+   * @param {number} millisecond
+   */
+  Actor.prototype._resetFnKeyframesFromMillisecond = function (millisecond) {
+    _.chain(this._keyframeProperties)
+      .where({ name: 'function' })
+      .each(function (fnKeyframe) {
+        if (fnKeyframe.millisecond >= millisecond) {
+          fnKeyframe.hasFired = false;
+        }
+      });
   };
 
   /*!
